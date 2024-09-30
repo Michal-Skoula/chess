@@ -29,3 +29,7 @@ function isOppositeColor(row,column,yourColor) {
         return chessBoard[row][column].color !== yourColor ;
     }
 }
+
+function getPiece(row,column) {
+    return chessBoard[row][column];
+}

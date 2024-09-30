@@ -1,16 +1,16 @@
 /**
- * Replicates the pawn movement. Validates if selected square is a pawn.
+ * Replicates the pawn's movement. Validates if selected square is a pawn.
  * @param row row
  * @param column column
  * @returns {[]} Returns all valid moves as an array of row and column coordinates
  */
 function pawnMoves(row,column) {
 
-    let piece = chessBoard[row][column];
+    const piece = getPiece(row,column);
     let moves = []
 
     if(piece.type === 'pawn') { // validation
-        let color = piece.color;
+        const color = piece.color;
         let op // +1 or -1 based on color
         color === 'white' ? op = +1 : op = -1;
 
@@ -53,18 +53,18 @@ function pawnMoves(row,column) {
  * @param {number[][]} movement Array of directions to add on every loop through
  * Ex. [ [+1,0],[-1,0],[0,+1],[0,-1] ] would emulate the rook's movement.
  * This works like a 2D ray-cast essentially.
- * @param {number} limit Limit of spaces to move. For example for the king, who's
- * limit is `1`. Default is `-1` or no limit.
+ * @param {number} limit Limit of spaces to move. For example for the king or knight,
+ * who's limit is `1`. Default is `-1` or no limit.
  * @param {boolean} canCapture Whether or not a capture considered a valid move.
  * This is used for getting pieces that can potentially be a discovered check threat.
  */
 function raycastMoves(row,column, movement, limit = -1, canCapture = true) {
 
-    let piece = chessBoard[row][column];
+    const piece = getPiece(row,column);
     let moves = []
 
     if(!isEmpty(row,column)) {
-        let color = piece.color;
+        const color = piece.color;
 
         // 1st for loop: iterate over all directions in movement array
         for(let direction = 0; direction < movement.length; direction++) {
@@ -100,8 +100,42 @@ function raycastMoves(row,column, movement, limit = -1, canCapture = true) {
         }
     }
     else {
-        throw 'Error: The selected field is empty.'
+        throw 'Error: The selected square is empty.'
     }
 
     return moves;
 }
+
+/**
+ * Get all possible squares for a given piece, with validation logic.
+ * @param row Row
+ * @param column Column
+ * @returns {*[]} All valid moves for the given piece.
+ */
+function getMoves(row,column) {
+    if(!isEmpty(row,column)) {
+        if(getPiece(row,column).type !== 'pawn') {
+            const moves = {
+                'rook': [[+1,0], [-1,0], [0,+1], [0,-1]],
+                'knight': [[+2,+1], [+2,-1], [-2,+1], [-2,-1], [+1,+2], [-1,+2], [+1,-2], [-1,+2]],
+                'bishop': [[+1,+1], [+1,-1], [-1,+1], [-1,-1]],
+                'king': [[+1,0], [-1,0], [0,+1], [0,-1], [+1,+1], [+1,-1], [-1,+1], [-1,-1]],
+                'queen': [[+1,0], [-1,0], [0,+1], [0,-1], [+1,+1], [+1,-1], [-1,+1], [-1,-1]],
+            }
+            const piece = getPiece(row,column);
+            const pieceType = piece.type;
+            const currentMoves = moves[pieceType];
+            const limit = pieceType === 'rook' || pieceType === 'knight' ? 1 : -1;
+
+            return raycastMoves(row, column, currentMoves, limit);
+        }
+        else {
+            return pawnMoves(row,column);
+        }
+
+    }
+    else {
+        throw "Error: The selected square is empty."
+    }
+}
+// TODO: Need to add castle-ing and en passant logic
