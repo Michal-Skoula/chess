@@ -5,16 +5,10 @@
  * @returns {boolean} `true` if valid move, `false` if invalid move.
  */
 function isInBounds(row,column) {
-    if(row < -1 && row > 8) {
-        return false
-    }
-    if(column < -1 && column > 8) {
-        return false
-    }
-    return true
+    return (column > -1 && column < 8) && (row > -1 && row < 8);
 }
+
 /**
- * Checks if selected square is empty.
  * @param row row
  * @param column column
  * @returns {boolean} `true` if empty, `false` if not empty.
@@ -22,6 +16,7 @@ function isInBounds(row,column) {
 function isEmpty(row,column) {
     return chessBoard[row][column] === 0;
 }
+
 /**
  * Checks if the selected square is opposite color of the current player's turn
  * @param row row
@@ -31,7 +26,6 @@ function isEmpty(row,column) {
  */
 function isOppositeColor(row,column,yourColor) {
     if(!isEmpty(row,column)) {
-
         return chessBoard[row][column].color !== yourColor ;
     }
 }
