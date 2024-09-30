@@ -1,3 +1,4 @@
+let captures = []
 let chessBoard = [
     ['','','','','','','',''],
     ['','','','','','','',''],
@@ -12,17 +13,8 @@ let chessBoard = [
 /**
  * Builds the chessboard based on the `board` variable.
  */
-function setupBoard() {
-    let board = [
-        ['r','n','b','q','k','b','n','r'],
-        ['p','p','p','p','p','p','p','p'],
-        ['x','x','x','x','x','x','x','x'],
-        ['x','x','x','x','x','x','x','x'],
-        ['x','x','x','x','x','x','x','x'],
-        ['x','x','x','x','x','x','x','x'],
-        ['p','p','p','p','p','p','p','p'],
-        ['r','n','b','q','k','b','n','r'],
-    ];
+function setupBoard(board) {
+
     let id = 1;
     for(let row = 0; row < 8; row++) { // rows
 
@@ -31,25 +23,34 @@ function setupBoard() {
             let piece = board[row][column];
             let color = row < 4 ? 'white' : 'black'; // top = white, bottom = black
             let type = '';
+            let points = 0
+
+            piece = piece.toLowerCase();
 
             switch(piece) {
                 case 'r':
                     type = 'rook';
+                    points = 5
                     break;
                 case 'n':
                     type = 'knight';
+                    points = 3
                     break;
                 case 'b':
                     type = 'bishop';
+                    points = 3
                     break;
                 case 'q':
                     type = 'queen';
+                    points = 10
                     break;
                 case 'k':
                     type = 'king';
+                    points = 0
                     break;
                 case 'p':
                     type = 'pawn';
+                    points = 1
                     break;
                 default:
                     type = 0
@@ -63,6 +64,7 @@ function setupBoard() {
                     type: type,
                     color: color,
                     lastMoved: 0,
+                    points: points,
                     square: [
                         row,
                         column
@@ -74,5 +76,14 @@ function setupBoard() {
 
     }
 }
-setupBoard();
-console.log(chessBoard)
+setupBoard([
+    ['r','n','b','q','k','b','n','r'],
+    ['p','p','p','p','p','p','p','p'],
+    ['x','x','x','x','x','x','x','x'],
+    ['x','x','x','x','x','x','x','x'],
+    ['x','x','x','x','x','x','x','x'],
+    ['x','x','x','x','x','x','x','x'],
+    ['p','p','p','p','p','p','p','p'],
+    ['r','n','b','q','k','b','n','r'],
+]);
+console.log(chessBoard);

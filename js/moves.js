@@ -139,3 +139,4 @@ function getMoves(row,column) {
     }
 }
 // TODO: Need to add castle-ing and en passant logic
+// TODO: Add validation for discovered checks before claiming a move is valid
