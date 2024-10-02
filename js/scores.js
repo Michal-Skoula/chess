@@ -3,7 +3,7 @@
  * @param row
  * @param column
  */
-function storeCapturedPiece(row,column) {
+function storeCapturedPieceToScoreboard(row,column) {
     let capturedPiece = getPiece(row,column);
     captures.push(capturedPiece);
 }

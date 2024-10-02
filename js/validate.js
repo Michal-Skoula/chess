@@ -16,7 +16,23 @@ function isInBounds(row,column) {
 function isEmpty(row,column) {
     return chessBoard[row][column] === 0;
 }
+/**
+ *
+ * @param row
+ * @param column
+ * @param typeOverride
+ * @param colorOverride
+ * @returns {{}}
+ */
+function getPiece(row,column, typeOverride='', colorOverride='') {
 
+    let piece = chessBoard[row][column];
+
+    (typeOverride) ? piece.type = typeOverride : piece.type;
+    (colorOverride) ? piece.color = colorOverride : piece.type;
+
+    return piece;
+}
 /**
  * Checks if the selected square is opposite color of the current player's turn
  * @param row row
@@ -29,7 +45,15 @@ function isOppositeColor(row,column,yourColor) {
         return chessBoard[row][column].color !== yourColor ;
     }
 }
-
-function getPiece(row,column) {
-    return chessBoard[row][column];
+function getKingPosition(color) {
+    let row, column;
+    if(color === 'white') {
+        row = whiteKing[0];
+        column = whiteKing[1];
+    } else {
+        row = blackKing[0];
+        column = blackKing[1];
+    }
+    return [row,column]
 }
+
