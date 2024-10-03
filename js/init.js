@@ -20,6 +20,8 @@ const moves = {
     'queen': [[+1,0], [-1,0], [0,+1], [0,-1], [+1,+1], [+1,-1], [-1,+1], [-1,-1]],
 }
 
+let round = 1; // Increments when a player finishes their turn. odd = white, even = black
+
 /**
  * Builds the chessboard based on the `board` variable.
  */
@@ -74,6 +76,7 @@ function setupBoard(board) {
                     type: type,
                     color: color,
                     lastMoved: 0,
+                    movedFrom: [row,column],
                     points: points,
                     square: [
                         row,
@@ -89,11 +92,11 @@ function setupBoard(board) {
 setupBoard([
   //  0   1   2   3   4   5   6   7
     ['r','n','b','q','k','b','n','r'], // 0
-    ['p','p','p','x','p','x','x','p'], // 1
-    ['x','x','p','x','x','x','x','b'], // 2
+    ['p','p','p','p','p','p','p','p'], // 1
+    ['x','x','x','x','x','x','x','x'], // 2
     ['x','x','x','x','x','x','x','x'], // 3
-    ['b','x','x','x','x','x','x','x'], // 4
-    ['n','x','x','x','x','x','x','x'], // 5
+    ['x','x','x','x','x','x','x','x'], // 4
+    ['x','x','x','x','x','x','x','x'], // 5
     ['p','p','p','p','p','p','p','p'], // 6
     ['r','n','b','q','k','b','n','r'], // 7
 ]);

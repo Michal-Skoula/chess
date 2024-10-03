@@ -16,11 +16,18 @@ function pawnMoves(row,column) {
         let op // +1 or -1 based on color
         color === 'white' ? op = +1 : op = -1;
 
-        // Move forward
+        // Move forward 1
         if( isEmpty(row+op, column) &&
             isInBounds(row+op, column))
         {
             moves.push([row+op,column]);
+        }
+        // Move forward 2
+        if( isEmpty(row+op*2, column) &&
+            isInBounds(row+op*2, column) &&
+            piece.lastMoved === 0)
+        {
+            moves.push([row+op*2,column]);
         }
         // Captures left and right, check if the piece is not your own
         if( !isEmpty(row+op,column-1) &&
@@ -37,10 +44,24 @@ function pawnMoves(row,column) {
             attacks.push([row+op,column+1]);
             moves.push([row+op,column+1]);
         }
+        // En passant - if pawn x+-1 from current pawn && lastMoved === round -1 ? true : false
+        if((row === 4 && color === 'white') || (row === 3 && color === 'black')){
+            // left
+            if(getPiece(row,column-1).type === 'pawn' &&
+                getPiece(row,column-1).color !== color) {
+
+                let pawn = getPiece(row,column-1);
+
+                 if(pawn.lastMoved === round - 1 && pawn.movedFrom[0] === column - 2) {
+                    moves.push([row,column-1]);
+                    attacks.push([row,column-1]);
+                }
+
+
+            }
+        }
 
         // TODO: Create en passant logic
-        // if there is pawn next to piece and has current move on the last turn, let capture
-        else {}
     }
 
     else {
@@ -103,7 +124,7 @@ function raycastMoves(row,column, movement, limit = -1, canCapture = true) {
                 isOppositeColor(calcRow,calcColumn,color))
             {
                 // Store result
-                attacksPieces.push(getPiece(calcRow,calcColumn))
+                attacksPieces.push(getPiece(calcRow,calcColumn));
                 attacks.push([calcRow, calcColumn]);
                 moves.push([calcRow,calcColumn]);
                 break;
@@ -122,17 +143,11 @@ function raycastMoves(row,column, movement, limit = -1, canCapture = true) {
         attacks: attacks
     };
 }
-function kingMoves() {
-    // Update global variable of king's position
-    //
-}
-
 
 /**
  * Get all possible squares for a given piece, with validation logic.
  * @param row Row
  * @param column Column
- * @param typeOverride Mainly used for validation
  * @returns {[]} All valid moves for the given piece.
  */
 function getMoves(row,column) {
@@ -141,27 +156,27 @@ function getMoves(row,column) {
         let movesToCheck = [];
 
         const piece = getPiece(row, column);
-        const color = piece.color;
         const pieceType = piece.type;
         const currentMoves = moves[pieceType];
         const limit = pieceType === 'king' || pieceType === 'knight' ? 1 : -1;
 
         let movesArr;
-       if (pieceType !== 'pawn') {
-           movesArr = raycastMoves(row, column, currentMoves, limit).moves;
+       if (pieceType === 'pawn') {
+           movesArr = pawnMoves(row, column).moves;
+           // console.log(movesArr)
 
            for(let i = 0; i < movesArr.length ; i++) {
                movesToCheck.push(movesArr[i]);
            }
-       } else {
-           movesArr = pawnMoves(row, column).moves;
+       }
+       else {
+           movesArr = raycastMoves(row, column, currentMoves, limit).moves;
 
            for(let i = 0; i < movesArr.length ; i++) {
                movesToCheck.push(movesArr[i]);
            }
        }
        return validateMoves(row, column, movesToCheck);
-        // TODO: Everything else works, only getMoves() needs fixing.
     }
     else {
         throw "Error: The selected square is empty.";
@@ -169,9 +184,14 @@ function getMoves(row,column) {
 }
 
 
-
+/**
+ * Constructs a new chessboard and checks all moves in `moves[]` array, then returns back to original state.
+ * @param row Row where the move originates
+ * @param column Column where the move originates
+ * @param moves 2D array `[[1,2],[3,4]] of moves to try
+ * @returns {*[[]]} 2D Array of valid moves
+ */
 function validateMoves(row, column, moves = []) {
-
     let validMoves = []
     const currentSquarePiece = getPiece(row,column)
     const color = currentSquarePiece.color;
@@ -184,8 +204,15 @@ function validateMoves(row, column, moves = []) {
         // Write the new board to be checked for checks
         chessBoard[row][column] = 0;
         chessBoard[moveRow][moveColumn] = currentSquarePiece;
+
         // Run the checks
-        if(!isChecked(getKingPosition(color)[0], getKingPosition(color)[1])) {
+        let kingPosRow = getKingPosition(color)[0];
+        let kingPosCol = getKingPosition(color)[1];
+        if(currentSquarePiece.type === 'king') {
+            kingPosRow = moveRow;
+            kingPosCol = moveColumn;
+        }
+        if(!isChecked(kingPosRow, kingPosCol)) {
             validMoves.push([moveRow, moveColumn]);
         }
         // Return the board to its original state
@@ -195,6 +222,61 @@ function validateMoves(row, column, moves = []) {
     return validMoves;
 
 }
+
+/**
+ * Runs a move as a from and to set of coordinates and checks who's turn it is. Also validates checkmates.
+ * @param fromRow
+ * @param fromColumn
+ * @param toRow
+ * @param toColumn
+ * @param currentRound
+ * @returns {status} Returns 1 if executed successfully.
+ */
+function move(fromRow, fromColumn, toRow, toColumn, currentRound = round) {
+    if(!isEmpty(fromRow, fromColumn)) {
+        const validMoves = getMoves(fromRow, fromColumn);
+        const piece = getPiece(fromRow, fromColumn);
+        const color = piece.color;
+
+        if(color === getTurn() ) {
+            for(let i = 0; i < validMoves.length ; i++) {
+                let validMoveRow = validMoves[i][0];
+                let validMoveColumn = validMoves[i][1];
+
+                if(toRow === validMoveRow && toColumn === validMoveColumn) {
+                    chessBoard[fromRow][fromColumn] = 0;
+                    chessBoard[toRow][toColumn] = piece;
+
+                    // Update king global position
+                    if(piece.type === 'king') {
+                        setKingPosition(color, toRow, toColumn);
+                    }
+                    round++; // Advances the round by one.
+                    piece.movedFrom = [fromRow, fromColumn];
+                    piece.lastMoved = currentRound;
+                    renderChessBoard(chessBoard);
+
+                    // Check for checkmates
+                    const opponentColor = (color === 'white') ? 'black' : 'white';
+                    if(isChecked(getKingPosition(opponentColor)[0],getKingPosition(opponentColor)[1])) {
+                        if(isCheckmated(opponentColor)) {
+                            console.log("CHECKMATE!!!");
+                        }
+                    }
+
+                    return 1;
+                }
+            }
+            throw "Error: Invalid move.";
+        } else {
+            throw `Error: It's ${getTurn()}'s turn.`
+        }
+    }
+    else {
+        throw "Error: the selected square is not a piece.";
+    }
+}
+
 
 
 

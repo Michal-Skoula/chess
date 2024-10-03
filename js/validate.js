@@ -45,6 +45,12 @@ function isOppositeColor(row,column,yourColor) {
         return chessBoard[row][column].color !== yourColor ;
     }
 }
+
+/**
+ * Gets the king's position based on the stored position
+ * @param color King's color
+ * @returns {number[]} King coords as [row,column]
+ */
 function getKingPosition(color) {
     let row, column;
     if(color === 'white') {
@@ -54,6 +60,28 @@ function getKingPosition(color) {
         row = blackKing[0];
         column = blackKing[1];
     }
-    return [row,column]
+    return [row,column];
 }
 
+/**
+ * Sets the king's new position in the global variables.
+ * @param color Color of king to set
+ * @param row New row
+ * @param column New column
+ */
+function setKingPosition(color, row, column) {
+    if(color === 'white') {
+        whiteKing = [row, column];
+    } else {
+        blackKing = [row, column];
+    }
+}
+
+/**
+ * If the `round` global is odd, it's white's turn, otherwise black's turn
+ * @param currentTurn gets the global turn variable
+ * @returns {string} `'white'` or `'black'`
+ */
+function getTurn(currentTurn = round) {
+    return currentTurn % 2 === 0 ? 'black' : 'white';
+}
